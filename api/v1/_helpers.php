@@ -40,25 +40,6 @@ function origin(): string {
 }
 
 /**
- * Get the project web root from current script path.
- * Example:
- * //api/v1/site_info.php
- * => /
- */
-function project_web_root(): string {
-    $script = str_replace("\\", "/", $_SERVER["SCRIPT_NAME"] ?? "");
-
-    $marker = "/api/v1/";
-    $pos = strpos($script, $marker);
-    if ($pos !== false) {
-        return substr($script, 0, $pos);
-    }
-
-    // fallback
-    return rtrim(dirname(dirname(dirname($script))), "/");
-}
-
-/**
  * JSON response helper
  */
 function json_response(array $payload, int $statusCode = 200): void {
@@ -145,6 +126,7 @@ function get_bool(string $key, bool $default = false, ?array $src = null): bool 
 
 /**
  * Convert DB path to browser-loadable public URL
+ * FIXED: No longer adds /propertysync-skyline prefix
  */
 function to_public_url(?string $path): ?string {
     if (!$path) return null;
@@ -166,11 +148,6 @@ function to_public_url(?string $path): ?string {
 
     $p = ltrim($p, "/");
 
-    $root = trim(project_web_root(), "/");
-
-    if ($root !== "" && strpos($p, $root . "/") !== 0) {
-        $p = $root . "/" . $p;
-    }
-
+    // FIXED: Removed project_web_root() logic that was adding /propertysync-skyline
     return origin() . "/" . $p;
 }

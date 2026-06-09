@@ -7,8 +7,6 @@ $sid   = max(0, get_int("sid", 0));
 
 function state_image_url(?string $path): ?string
 {
-function state_image_url(?string $path): ?string
-{
     if (!$path) {
         return null;
     }
@@ -21,7 +19,13 @@ function state_image_url(?string $path): ?string
     $path = str_replace("\\", "/", $path);
     $path = ltrim($path, "/");
 
+    // Remove any /propertysync-skyline/ prefix if it exists
+    $path = preg_replace('/^propertysync-skyline\//', '', $path);
+    $path = preg_replace('/^\/propertysync-skyline\//', '', $path);
+
     if (preg_match('/^https?:\/\//i', $path)) {
+        // If it's already a full URL, still remove /propertysync-skyline/ from it
+        $path = preg_replace('/\/propertysync-skyline\//', '/', $path);
         return $path;
     }
 

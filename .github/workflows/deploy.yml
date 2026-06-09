@@ -1,4 +1,4 @@
-name: Deploy FindProperties (Multi-Env)
+name: Deploy FindProperties (Full Stack)
 
 on:
   push:
@@ -19,7 +19,6 @@ jobs:
       - name: Install & Build React App
         run: |
           npm install
-          # THE MAGIC FIX: Create the .env.production file so Vite knows the API path!
           echo "VITE_API_BASE=/api/v1" > .env.production
           npm run build
 
@@ -34,7 +33,7 @@ jobs:
             echo "ENV_NAME=STAGING" >> $GITHUB_OUTPUT
           fi
 
-      - name: Deploy to ${{ steps.env.outputs.ENV_NAME }}
+      - name: Deploy React Frontend
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -43,6 +42,18 @@ jobs:
           source: "dist"
           target: ${{ steps.env.outputs.TARGET_DIR }}
           strip_components: 1
+          overwrite: true
+          debug: true
+          insecure: true
+
+      - name: Deploy PHP Backend (api, config, admin)
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "api,config,admin"
+          target: ${{ steps.env.outputs.TARGET_DIR }}
           overwrite: true
           debug: true
           insecure: true
