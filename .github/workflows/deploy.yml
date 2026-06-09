@@ -1,0 +1,38 @@
+name: Deploy FindProperties.ng
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Download your code from GitHub
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # 2. Install Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      # 3. Build the React App automatically!
+      - name: Install Dependencies & Build
+        run: |
+          npm install
+          npm run build
+
+      # 4. Beam the built files directly to AWS!
+      - name: Deploy to AWS EC2
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "dist/*"
+          target: "/var/www/prod/"
+          strip_components: 1
+          overwrite: true
+          rm: false # CRITICAL: This ensures we DON'T delete your PHP admin/api folders!
