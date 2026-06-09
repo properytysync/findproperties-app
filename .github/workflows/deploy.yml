@@ -19,6 +19,8 @@ jobs:
       - name: Install & Build React App
         run: |
           npm install
+          # THE MAGIC FIX: Create the .env.production file so Vite knows the API path!
+          echo "VITE_API_BASE=/api/v1" > .env.production
           npm run build
 
       - name: Determine Target Environment
