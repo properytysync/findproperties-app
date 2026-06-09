@@ -42,8 +42,8 @@ function origin(): string {
 /**
  * Get the project web root from current script path.
  * Example:
- * /realestatetemps/api/v1/site_info.php
- * => /realestatetemps
+ * //api/v1/site_info.php
+ * => /
  */
 function project_web_root(): string {
     $script = str_replace("\\", "/", $_SERVER["SCRIPT_NAME"] ?? "");
