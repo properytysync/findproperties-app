@@ -1,8 +1,8 @@
-name: Deploy FindProperties.ng
+name: Deploy FindProperties (Multi-Env)
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "develop"]
 
 jobs:
   build-and-deploy:
@@ -13,23 +13,34 @@ jobs:
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
-        with: { node-version: '20' }
+        with:
+          node-version: '20'
 
-      - name: Install & Build
+      - name: Install & Build React App
         run: |
           npm install
           npm run build
 
-      - name: Deploy to AWS EC2
+      - name: Determine Target Environment
+        id: env
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "TARGET_DIR=/var/www/prod/" >> $GITHUB_OUTPUT
+            echo "ENV_NAME=PRODUCTION" >> $GITHUB_OUTPUT
+          else
+            echo "TARGET_DIR=/var/www/staging/" >> $GITHUB_OUTPUT
+            echo "ENV_NAME=STAGING" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy to ${{ steps.env.outputs.ENV_NAME }}
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "dist"
-          target: "/var/www/prod/"
+          target: ${{ steps.env.outputs.TARGET_DIR }}
           strip_components: 1
           overwrite: true
           debug: true
-          # Bypass strict host key checking on first run:
-          insecure: true 
+          insecure: true
