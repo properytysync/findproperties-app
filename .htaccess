@@ -1,5 +1,14 @@
 Options -MultiViews
 RewriteEngine On
+
+# Let real files and directories pass through (PHP, images, etc.)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Don't rewrite .php files — let Apache execute them
+RewriteRule \.php$ - [L]
+
+# SPA fallback — only for non-file, non-PHP requests
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^ index.html [L]
