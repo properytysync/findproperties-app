@@ -31,7 +31,7 @@ if (!isset($con) || !$con) {
 }
 
 /**
- * Origin only
+ * Get current origin (protocol + host)
  */
 function origin(): string {
     $scheme = (!empty($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] !== "off") ? "https" : "http";
@@ -134,20 +134,22 @@ function to_public_url(?string $path): ?string {
     $p = trim((string)$path);
     if ($p === "") return null;
 
-    // already absolute
+    // If already a full URL, return as-is
     if (preg_match('/^https?:\/\//i', $p)) {
-        return preg_replace('/^https:\/\/localhost/i', 'http://localhost', $p);
+        return $p;
     }
 
+    // Normalize backslashes to forward slashes
     $p = str_replace("\\", "/", $p);
 
-    // filename only => assume property image folder
+    // If it's just a filename (no slashes), assume it's a property image
     if (strpos($p, "/") === false) {
-        $p = "admin/property/" . rawurlencode($p);
+        $p = "admin/property/" . $p;
     }
 
+    // Remove leading slash if present
     $p = ltrim($p, "/");
 
-    // FIXED: Removed project_web_root() logic that was adding /propertysync-skyline
+    // Return full URL using current domain - NO project subfolder
     return origin() . "/" . $p;
 }
